@@ -1,8 +1,10 @@
 var assign = require("object-assign");
 var stream = require("stream");
 var reactDocs = require('react-docgen')
-var path   = require("path");
-var util   = require("util");
+var path = require("path");
+var util = require("util");
+
+var ERROR_MISSING_DEFINITION = require('react-docgen/dist/parse').ERROR_MISSING_DEFINITION
 
 module.exports = Redocify;
 util.inherits(Redocify, stream.Transform);
@@ -23,14 +25,22 @@ Redocify.prototype._transform = function (buf, enc, callback) {
 };
 
 Redocify.prototype._flush = function (callback) {
+  console.log()
   try {
     var result = reactDocs.parse(this._data)
-    this.push(this._data + ';\n' + 'var doc = '+JSON.stringify(result)+';\n if (exports.default) { exports.default.doc = doc } else { module.exports.doc = doc }');
-  } catch(err) {
-    return;
+    this.push(this._data + ';\n' + 'var doc = ' + JSON.stringify(result) + ';\n if (exports.default) { exports.default.doc = doc } else { module.exports.doc = doc }');
+  } catch (err) {
+    if (err.message === ERROR_MISSING_DEFINITION) {
+      this.push(this._data);
+    }
+    else {
+      this.emit('error', err)
+      return
+    }
   }
   callback();
 };
+
 const REGEX = /\.jsx$/
 function canCompile(file) {
   return REGEX.test(file)
