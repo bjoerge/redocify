@@ -1,6 +1,6 @@
 {
   "name": "redocify",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A browserify transform that uses react-docgen to extract information from React component files",
   "main": "index.js",
   "scripts": {
